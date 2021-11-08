@@ -15,11 +15,11 @@ text_field, word_embeddings, vocab_size = get_text_metadata()
 # Models (create model according to text embedding)
 if embed_type == 'use':
     # For USE (Universal Sentence Embeddings)
-    model_name = 'img_use_rcnn_margin_10boxes_jitter_rotate_aug_ner'
+    model_name = 'baseline'
     combined_model = CombinedModelMaskRCNN(hidden_size=300, use=True).to(device)
 else:
     # For Glove and Fasttext Embeddings
-    model_name = 'img_lstm_glove_rcnn_margin_10boxes_jitter_rotate_aug_ner'
+    model_name = 'baseline'
     combined_model = CombinedModelMaskRCNN(use=False, hidden_size=300, embedding_length=word_embeddings.shape[1]).to(device)
 
 
@@ -34,13 +34,16 @@ def get_scores(v_data):
             score_c1 (float): Score for the first caption associated with the image
             score_c2 (float): Score for the second caption associated with the image
     """
-    checkpoint = torch.load(BASE_DIR + 'models_final/' + model_name + '.pt')
+    checkpoint = torch.load('models_final/' + model_name + '.pt')
     combined_model.load_state_dict(checkpoint)
     combined_model.to(device)
     combined_model.eval()
 
-    img_path = os.path.join(DATA_DIR, v_data["img_local_path"])
+    img_path = os.path.join( v_data["img_local_path"])
+    
     bbox_list = v_data['maskrcnn_bboxes']
+    # print(v_data["img_local_path"])
+    
     bbox_classes = [-1] * len(bbox_list)
     img = cv2.imread(img_path)
     img_shape = img.shape[:2]
@@ -114,7 +117,7 @@ def evaluate_context_with_bbox_overlap(v_data):
 if __name__ == "__main__":
     """ Main function to compute out-of-context detection accuracy"""
 
-    test_samples = read_json_data(os.path.join(DATA_DIR, 'annotations', 'test_data.json'))
+    test_samples = read_json_data(os.path.join( 'test_data.json'))
     ours_correct = 0
     lang_correct = 0
 
